@@ -1,0 +1,27 @@
+{
+  "name": "placepro-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered placement preparation platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run build -w @placepro/shared && concurrently \"npm run dev -w @placepro/web\" \"npm run dev -w @placepro/api\"",
+    "dev:web": "npm run dev -w @placepro/web",
+    "dev:api": "npm run dev -w @placepro/api",
+    "build": "npm run build -w @placepro/database && npm run build -w @placepro/shared && npm run build -w @placepro/api && npm run build -w @placepro/web",
+    "db:generate": "npm run generate -w @placepro/database",
+    "db:push": "npm run push -w @placepro/database",
+    "db:migrate": "npm run migrate -w @placepro/database",
+    "db:seed": "npm run seed -w @placepro/database",
+    "lint": "npm run lint -w @placepro/web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

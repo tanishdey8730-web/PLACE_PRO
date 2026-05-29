@@ -1,0 +1,579 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  MENTOR
+  RECRUITER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum CodingCategory {
+  ARRAYS
+  STRINGS
+  LINKED_LIST
+  STACK
+  QUEUE
+  TREES
+  GRAPHS
+  DYNAMIC_PROGRAMMING
+  GREEDY
+}
+
+enum Language {
+  C
+  CPP
+  JAVA
+  PYTHON
+  JAVASCRIPT
+}
+
+enum SubmissionStatus {
+  PENDING
+  RUNNING
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT
+  MEMORY_LIMIT
+  RUNTIME_ERROR
+  COMPILE_ERROR
+}
+
+enum AptitudeCategory {
+  QUANTITATIVE
+  LOGICAL
+  VERBAL
+}
+
+enum InterviewType {
+  TECHNICAL
+  HR
+  BEHAVIORAL
+}
+
+enum JobType {
+  FULL_TIME
+  INTERNSHIP
+  CONTRACT
+}
+
+enum ApplicationStatus {
+  APPLIED
+  REVIEWING
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ContestType {
+  CODING
+  APTITUDE
+  COMPANY
+}
+
+enum PostType {
+  DISCUSSION
+  DOUBT
+  CODING
+  GENERAL
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  PREMIUM
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String?
+  name          String
+  avatar        String?
+  role          UserRole  @default(STUDENT)
+  emailVerified DateTime?
+  bio           String?
+  college       String?
+  graduationYear Int?
+  skills        String[]  @default([])
+  githubUrl     String?
+  linkedinUrl   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  otpCodes          OtpCode[]
+  profile           StudentProfile?
+  submissions       Submission[]
+  aptitudeAttempts  AptitudeAttempt[]
+  resumes           Resume[]
+  mockInterviews    MockInterview[]
+  courseProgress    CourseProgress[]
+  contestEntries    ContestEntry[]
+  jobApplications   JobApplication[]
+  mentorProfile     MentorProfile?
+  mentorBookings    MentorBooking[]  @relation("StudentBookings")
+  posts             Post[]
+  comments          Comment[]
+  upvotes           Upvote[]
+  badges            UserBadge[]
+  xpLogs            XpLog[]
+  streak            Streak?
+  notifications     Notification[]
+  subscriptions     Subscription[]
+  discussions       Discussion[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([email, code])
+}
+
+model StudentProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  placementReadiness  Float    @default(0)
+  codingScore         Float    @default(0)
+  aptitudeScore       Float    @default(0)
+  interviewScore      Float    @default(0)
+  resumeAtsScore      Float    @default(0)
+  totalXp             Int      @default(0)
+  level               Int      @default(1)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt           DateTime @updatedAt
+}
+
+model Streak {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  lastActiveAt  DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CodingProblem {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  title       String
+  description String         @db.Text
+  difficulty  Difficulty
+  category    CodingCategory
+  companies   String[]       @default([])
+  tags        String[]       @default([])
+  starterCode Json
+  timeLimit   Int            @default(2000)
+  memoryLimit Int            @default(256000)
+  acceptance  Float          @default(0)
+  totalSubs   Int            @default(0)
+  editorial   String?        @db.Text
+  videoUrl    String?
+  isPublished Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  testCases   TestCase[]
+  submissions Submission[]
+  discussions Discussion[]
+}
+
+model TestCase {
+  id        String        @id @default(cuid())
+  problemId String
+  input     String        @db.Text
+  output    String        @db.Text
+  isHidden  Boolean       @default(true)
+  order     Int           @default(0)
+  problem   CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+model Submission {
+  id           String           @id @default(cuid())
+  userId       String
+  problemId    String
+  code         String           @db.Text
+  language     Language
+  status       SubmissionStatus @default(PENDING)
+  runtime      Int?
+  memory       Int?
+  passedTests  Int              @default(0)
+  totalTests   Int              @default(0)
+  judgeToken   String?
+  createdAt    DateTime         @default(now())
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem      CodingProblem    @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([userId, problemId])
+}
+
+model Discussion {
+  id        String        @id @default(cuid())
+  problemId String
+  userId    String
+  content   String        @db.Text
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  problem   CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AptitudeQuestion {
+  id          String           @id @default(cuid())
+  category    AptitudeCategory
+  subCategory String
+  question    String           @db.Text
+  options     Json
+  correctAnswer String
+  explanation String?          @db.Text
+  difficulty  Difficulty
+  isPublished Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+
+  attempts AptitudeAttempt[]
+}
+
+model AptitudeQuiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    AptitudeCategory
+  duration    Int
+  questionIds String[]
+  isMockExam  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  attempts AptitudeAttempt[]
+}
+
+model AptitudeAttempt {
+  id         String   @id @default(cuid())
+  userId     String
+  quizId     String?
+  questionId String?
+  answers    Json
+  score      Float
+  timeTaken  Int?
+  completedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz       AptitudeQuiz? @relation(fields: [quizId], references: [id])
+  question   AptitudeQuestion? @relation(fields: [questionId], references: [id])
+}
+
+model Resume {
+  id           String   @id @default(cuid())
+  userId       String
+  fileName     String
+  fileUrl      String
+  atsScore     Float?
+  analysis     Json?
+  suggestions  Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MockInterview {
+  id              String        @id @default(cuid())
+  userId          String
+  type            InterviewType
+  questions       Json
+  transcript      Json?
+  recordingUrl    String?
+  communication   Float?
+  confidence      Float?
+  technicalScore  Float?
+  feedback        Json?
+  duration        Int?
+  completedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String   @db.Text
+  category    String
+  thumbnail   String?
+  duration    Int
+  level       Difficulty
+  isPublished Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  lessons  Lesson[]
+  progress CourseProgress[]
+}
+
+model Lesson {
+  id        String   @id @default(cuid())
+  courseId  String
+  title     String
+  content   String?  @db.Text
+  videoUrl  String?
+  order     Int
+  duration  Int      @default(0)
+  quiz      Json?
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model CourseProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  completed   Int      @default(0)
+  total       Int      @default(0)
+  lastLessonId String?
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model Contest {
+  id          String      @id @default(cuid())
+  title       String
+  description String?     @db.Text
+  type        ContestType
+  startTime   DateTime
+  endTime     DateTime
+  problemIds  String[]    @default([])
+  rewards     Json?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  entries ContestEntry[]
+}
+
+model ContestEntry {
+  id        String   @id @default(cuid())
+  contestId String
+  userId    String
+  score     Int      @default(0)
+  rank      Int?
+  joinedAt  DateTime @default(now())
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+}
+
+model Company {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  logo     String?
+  website  String?
+  industry String?
+  jobs     Job[]
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  companyId   String
+  title       String
+  description String   @db.Text
+  type        JobType
+  location    String
+  salaryMin   Int?
+  salaryMax   Int?
+  skills      String[] @default([])
+  experience  String?
+  isActive    Boolean  @default(true)
+  postedById  String?
+  createdAt   DateTime @default(now())
+  company     Company  @relation(fields: [companyId], references: [id])
+  applications JobApplication[]
+}
+
+model JobApplication {
+  id        String            @id @default(cuid())
+  jobId     String
+  userId    String
+  status    ApplicationStatus @default(APPLIED)
+  resumeUrl String?
+  coverNote String?
+  appliedAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  job       Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, userId])
+}
+
+model MentorProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  expertise    String[]
+  experience   Int
+  hourlyRate   Float
+  rating       Float    @default(0)
+  totalSessions Int     @default(0)
+  bio          String?  @db.Text
+  availability Json?
+  zoomLink     String?
+  meetLink     String?
+  isVerified   Boolean  @default(false)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings     MentorBooking[]
+}
+
+model MentorBooking {
+  id        String   @id @default(cuid())
+  mentorId  String
+  studentId String
+  scheduledAt DateTime
+  duration  Int      @default(60)
+  topic     String?
+  status    String   @default("scheduled")
+  meetUrl   String?
+  mentor    MentorProfile @relation(fields: [mentorId], references: [id])
+  student   User     @relation("StudentBookings", fields: [studentId], references: [id])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  content   String   @db.Text
+  type      PostType @default(GENERAL)
+  tags      String[] @default([])
+  upvoteCount Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  upvotes   Upvote[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Upvote {
+  id     String @id @default(cuid())
+  postId String
+  userId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model Badge {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  description String
+  icon        String
+  xpRequired  Int    @default(0)
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge    Badge    @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+model XpLog {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id        String           @id @default(cuid())
+  userId    String
+  plan      SubscriptionPlan @default(FREE)
+  stripeId  String?
+  razorpayId String?
+  expiresAt DateTime?
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CareerPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  path      String
+  plan      Json
+  createdAt DateTime @default(now())
+}

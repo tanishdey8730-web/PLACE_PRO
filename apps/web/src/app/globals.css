@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: oklch(98% 0.01 270);
+  --color-foreground: oklch(15% 0.02 270);
+  --color-card: oklch(100% 0 0 / 0.7);
+  --color-primary: oklch(55% 0.22 270);
+  --color-primary-foreground: oklch(98% 0 0);
+  --color-secondary: oklch(92% 0.04 280);
+  --color-muted: oklch(94% 0.02 270);
+  --color-muted-foreground: oklch(45% 0.02 270);
+  --color-accent: oklch(60% 0.25 300);
+  --color-border: oklch(88% 0.02 270);
+  --color-ring: oklch(55% 0.22 270);
+  --radius-lg: 0.75rem;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark {
+  --color-background: oklch(12% 0.02 270);
+  --color-foreground: oklch(96% 0.01 270);
+  --color-card: oklch(18% 0.03 270 / 0.6);
+  --color-primary: oklch(65% 0.2 270);
+  --color-secondary: oklch(22% 0.04 280);
+  --color-muted: oklch(22% 0.03 270);
+  --color-muted-foreground: oklch(65% 0.02 270);
+  --color-border: oklch(28% 0.03 270);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+}
+
+.glass {
+  @apply backdrop-blur-xl bg-card border border-white/10 shadow-xl;
+}
+
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-500 via-purple-500 to-violet-500 bg-clip-text text-transparent;
+}
+
+.gradient-bg {
+  @apply bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-violet-600/10;
+}
+
+.mesh-bg {
+  background-image:
+    radial-gradient(at 40% 20%, oklch(55% 0.22 270 / 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, oklch(60% 0.25 300 / 0.12) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, oklch(55% 0.22 270 / 0.1) 0px, transparent 50%);
+}
