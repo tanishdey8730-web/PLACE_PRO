@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PlacePro AI
 
 **AI-powered placement preparation platform** — coding practice, aptitude tests, mock interviews, resume analysis, career coaching, jobs, contests, and more.
@@ -158,3 +159,6 @@ docker compose up --build
 ## License
 
 Proprietary — PlacePro AI © 2026
+=======
+# PLACE_PRO
+>>>>>>> 14afa875615c34d7da0a6b729596b88de44f4b5c
