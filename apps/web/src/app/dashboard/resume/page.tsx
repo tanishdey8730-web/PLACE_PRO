@@ -46,8 +46,15 @@ export default function ResumePage() {
     <>
       <DashboardHeader />
       <main className="p-4 lg:p-8 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold">AI Resume Analyzer</h1>
-        <p className="text-muted-foreground mt-1 mb-8">ATS compatibility, skill gaps & optimization</p>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl font-bold">AI Resume Analyzer</h1>
+            <p className="text-muted-foreground mt-1">ATS compatibility, skill gaps & optimization</p>
+          </div>
+          <a href="/dashboard/resume-builder">
+            <Button variant="outline">Open Resume Builder</Button>
+          </a>
+        </div>
 
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-12">

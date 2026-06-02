@@ -1,12 +1,17 @@
 import { Router } from "express";
 import { prisma } from "@placepro/database";
-import { authenticate, isGuestUser } from "../middleware/auth.js";
+import { authenticate, isGuestUser, isRecruiterDemo } from "../middleware/auth.js";
 import { guestUser } from "../demo/responses.js";
+import { demoRecruiterUser } from "../demo/recruiter.js";
 
 const router = Router();
 
 router.get("/me", authenticate, async (req, res, next) => {
   try {
+    if (isRecruiterDemo(req)) {
+      return res.json({ success: true, data: demoRecruiterUser });
+    }
+
     if (isGuestUser(req)) {
       return res.json({ success: true, data: guestUser });
     }

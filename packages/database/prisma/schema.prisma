@@ -98,6 +98,79 @@ enum SubscriptionPlan {
   PREMIUM
 }
 
+enum RoadmapSkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum RoadmapCategory {
+  DSA
+  APTITUDE
+  SYSTEM_DESIGN
+  CORE_SUBJECTS
+  PROJECTS
+  RESUME_BUILDING
+}
+
+enum ResumeBuilderTemplate {
+  ATS_FRIENDLY
+  PROFESSIONAL
+  MODERN
+}
+
+enum CoverLetterTemplate {
+  PROFESSIONAL
+  MODERN
+  FORMAL
+  CONCISE
+}
+
+enum CoverLetterDocType {
+  COVER_LETTER
+  INTERNSHIP_APPLICATION
+  REFERRAL_REQUEST
+  HR_FOLLOW_UP
+}
+
+enum ReferralListingType {
+  REQUEST
+  OFFER
+}
+
+enum ReferralListingStatus {
+  OPEN
+  MATCHED
+  CLOSED
+}
+
+enum ReferralConnectionStatus {
+  PENDING
+  ACTIVE
+  REFERRED
+  COMPLETED
+  DECLINED
+  CANCELLED
+}
+
+enum PlacementTrackerStage {
+  APPLIED
+  OA_CLEARED
+  INTERVIEW_SCHEDULED
+  HR_ROUND
+  SELECTED
+  REJECTED
+}
+
+enum SalaryCompanyType {
+  PRODUCT
+  SERVICE
+  STARTUP
+  FAANG
+  MNC
+  CONSULTING
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -137,6 +210,31 @@ model User {
   notifications     Notification[]
   subscriptions     Subscription[]
   discussions       Discussion[]
+  placementRoadmaps PlacementRoadmap[]
+  companyPrepProgress CompanyPrepProgress[]
+  resumeBuilderDocs   ResumeBuilderDocument[]
+  linkedInAnalyses    LinkedInAnalysis[]
+  coverLetters        CoverLetterDocument[]
+  placementPredictions  PlacementProbabilityPrediction[]
+  careerCoachSessions   CareerCoachSession[]
+  jobMatchAnalyses      JobMatchAnalysis[]
+  hrMockInterviews      HrMockInterview[]
+  collabRoomsCreated    CollaborativeCodingRoom[]
+  systemDesignSessions  SystemDesignSession[]
+  projectReviews        ProjectReview[]
+  gitHubProfileAnalyses GitHubProfileAnalysis[]
+  dailyChallengeSets    DailyChallengeSet[]
+  recruiterProfile      RecruiterProfile?
+  jobsPosted            Job[]                 @relation("JobsPosted")
+  recruiterInterviews   RecruiterInterview[]  @relation("RecruiterInterviews")
+  candidateInterviews   RecruiterInterview[]  @relation("CandidateInterviews")
+  referralListings      ReferralListing[]
+  referralConnectionsInitiated ReferralConnection[] @relation("ReferralInitiator")
+  referralConnectionsReceived  ReferralConnection[] @relation("ReferralParticipant")
+  referralMessagesSent  ReferralMessage[]
+  placementApplications PlacementApplication[]
+  networkingSessions    NetworkingAssistantSession[]
+  salaryPredictions     SalaryPrediction[]
 }
 
 model Account {
@@ -416,6 +514,8 @@ model Company {
   website  String?
   industry String?
   jobs     Job[]
+  recruiters RecruiterProfile[]
+  referralListings ReferralListing[]
 }
 
 model Job {
@@ -433,7 +533,9 @@ model Job {
   postedById  String?
   createdAt   DateTime @default(now())
   company     Company  @relation(fields: [companyId], references: [id])
+  postedBy    User?    @relation("JobsPosted", fields: [postedById], references: [id], onDelete: SetNull)
   applications JobApplication[]
+  recruiterInterviews RecruiterInterview[]
 }
 
 model JobApplication {
@@ -576,4 +678,424 @@ model CareerPlan {
   path      String
   plan      Json
   createdAt DateTime @default(now())
+}
+
+model PlacementRoadmap {
+  id               String            @id @default(cuid())
+  userId           String
+  branch           String
+  graduationYear   Int
+  skillLevel       RoadmapSkillLevel
+  targetCompanies  String[]          @default([])
+  studyHoursPerDay Int
+  plan             Json
+  progressPercent  Float             @default(0)
+  adaptiveNotes    String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completedTasks   RoadmapTaskCompletion[]
+
+  @@index([userId])
+}
+
+model RoadmapTaskCompletion {
+  id          String           @id @default(cuid())
+  roadmapId   String
+  taskKey     String
+  category    RoadmapCategory?
+  completedAt DateTime         @default(now())
+  roadmap     PlacementRoadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@unique([roadmapId, taskKey])
+  @@index([roadmapId])
+}
+
+model CompanyPrepProgress {
+  id               String   @id @default(cuid())
+  userId           String
+  companySlug      String
+  completedSections String[] @default([])
+  readinessScore   Float    @default(0)
+  progressPercent  Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companySlug])
+  @@index([userId])
+}
+
+model ResumeBuilderDocument {
+  id           String                @id @default(cuid())
+  userId       String
+  title        String                @default("My Resume")
+  template     ResumeBuilderTemplate @default(ATS_FRIENDLY)
+  content      Json
+  atsScore     Float?
+  qualityScore Float?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model LinkedInAnalysis {
+  id            String   @id @default(cuid())
+  userId        String
+  profileUrl    String
+  linkedinScore Float
+  analysis      Json
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CoverLetterDocument {
+  id           String              @id @default(cuid())
+  userId       String
+  companyName  String
+  jobTitle     String
+  template     CoverLetterTemplate @default(PROFESSIONAL)
+  documents    Json
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PlacementProbabilityPrediction {
+  id                    String   @id @default(cuid())
+  userId                String
+  cgpa                  Float
+  dsaScore              Float
+  aptitudeScore         Float
+  resumeScore           Float
+  projectCount          Int
+  certificationCount    Int
+  overallProbability    Float
+  companyProbabilities  Json
+  improvementSuggestions Json
+  createdAt             DateTime @default(now())
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum CareerCoachMessageRole {
+  USER
+  ASSISTANT
+}
+
+model CareerCoachSession {
+  id         String   @id @default(cuid())
+  userId     String
+  title      String   @default("Career coaching")
+  targetRole String   @default("Software Engineer")
+  insights   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages   CareerCoachMessage[]
+
+  @@index([userId])
+}
+
+model CareerCoachMessage {
+  id        String                 @id @default(cuid())
+  sessionId String
+  role      CareerCoachMessageRole
+  content   String                 @db.Text
+  metadata  Json?
+  createdAt DateTime               @default(now())
+  session   CareerCoachSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model JobMatchAnalysis {
+  id              String   @id @default(cuid())
+  userId          String
+  jobTitle        String?
+  companyName     String?
+  resumeText      String   @db.Text
+  jobDescription  String   @db.Text
+  matchScore      Float
+  missingSkills   String[] @default([])
+  strengths       String[] @default([])
+  weaknesses      String[] @default([])
+  analysis        Json?
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model HrMockInterview {
+  id              String    @id @default(cuid())
+  userId          String
+  targetRole      String    @default("Software Engineer")
+  companyName     String?
+  questions       Json
+  answers         Json?
+  communication   Float?
+  confidence      Float?
+  clarity         Float?
+  professionalism Float?
+  overallScore    Float?
+  report          Json?
+  duration        Int?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CollaborativeCodingRoom {
+  id          String   @id @default(cuid())
+  roomCode    String   @unique
+  title       String   @default("Pair Programming Session")
+  language    String   @default("python")
+  code        String   @db.Text @default("")
+  createdById String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([roomCode])
+  @@index([createdById])
+}
+
+model SystemDesignSession {
+  id              String    @id @default(cuid())
+  userId          String
+  topicId         String
+  topicTitle      String
+  design          String    @db.Text
+  scalability     Float?
+  architecture    Float?
+  databaseDesign  Float?
+  caching         Float?
+  security        Float?
+  overallScore    Float?
+  report          Json?
+  duration        Int?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([topicId])
+}
+
+model ProjectReview {
+  id               String   @id @default(cuid())
+  userId           String
+  repoUrl          String
+  repoFullName     String
+  primaryLanguage  String?
+  projectScore     Float
+  codeQuality      Float?
+  architecture     Float?
+  documentation    Float?
+  resumeWorthiness Float?
+  report           Json?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([repoFullName])
+}
+
+model GitHubProfileAnalysis {
+  id                   String   @id @default(cuid())
+  userId               String
+  username             String
+  profileUrl           String
+  publicRepos          Int      @default(0)
+  followers            Int      @default(0)
+  developerScore       Float
+  repositories         Float?
+  languages            Float?
+  contributionActivity Float?
+  projectQuality       Float?
+  openSourceActivity   Float?
+  report               Json?
+  createdAt            DateTime @default(now())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([username])
+}
+
+model DailyChallengeSet {
+  id               String   @id @default(cuid())
+  userId           String
+  challengeDate    String
+  placementGoal    String   @default("general")
+  weakTopics       String[] @default([])
+  progressSnapshot Json?
+  challenges       Json
+  answerKey        Json?
+  completedCount   Int      @default(0)
+  totalCount       Int
+  isDayComplete    Boolean  @default(false)
+  xpEarned         Int      @default(0)
+  summary          String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeDate])
+  @@index([userId])
+}
+
+model RecruiterProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  companyId  String?
+  jobTitle   String?
+  department String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company    Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+}
+
+model RecruiterInterview {
+  id              String   @id @default(cuid())
+  recruiterId     String
+  candidateId     String
+  jobId           String?
+  scheduledAt     DateTime
+  durationMinutes Int      @default(45)
+  type            String   @default("technical")
+  status          String   @default("scheduled")
+  location        String?
+  meetingUrl      String?
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  recruiter       User     @relation("RecruiterInterviews", fields: [recruiterId], references: [id], onDelete: Cascade)
+  candidate       User     @relation("CandidateInterviews", fields: [candidateId], references: [id], onDelete: Cascade)
+  job             Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@index([recruiterId])
+  @@index([candidateId])
+  @@index([scheduledAt])
+}
+
+model ReferralListing {
+  id           String                @id @default(cuid())
+  userId       String
+  type         ReferralListingType
+  companyId    String?
+  companyName  String
+  targetRole   String
+  description  String                @db.Text
+  skills       String[]              @default([])
+  status       ReferralListingStatus @default(OPEN)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company      Company?              @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  connections  ReferralConnection[]
+
+  @@index([userId])
+  @@index([type, status])
+  @@index([companyId])
+  @@index([companyName])
+}
+
+model ReferralConnection {
+  id              String                   @id @default(cuid())
+  listingId       String
+  initiatorId     String
+  participantId   String
+  status          ReferralConnectionStatus @default(PENDING)
+  trackingNotes   String?                  @db.Text
+  referredAt      DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  listing         ReferralListing          @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  initiator       User                     @relation("ReferralInitiator", fields: [initiatorId], references: [id], onDelete: Cascade)
+  participant     User                     @relation("ReferralParticipant", fields: [participantId], references: [id], onDelete: Cascade)
+  messages        ReferralMessage[]
+
+  @@unique([listingId, initiatorId, participantId])
+  @@index([initiatorId])
+  @@index([participantId])
+  @@index([status])
+}
+
+model ReferralMessage {
+  id           String             @id @default(cuid())
+  connectionId String
+  senderId     String
+  body         String             @db.Text
+  createdAt    DateTime           @default(now())
+  connection   ReferralConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  sender       User               @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId])
+}
+
+model PlacementApplication {
+  id          String               @id @default(cuid())
+  userId      String
+  companyName String
+  role        String
+  location    String?
+  jobType     String?
+  stage       PlacementTrackerStage @default(APPLIED)
+  appliedAt   DateTime             @default(now())
+  nextEventAt DateTime?
+  notes       String?              @db.Text
+  salaryOffer String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, stage])
+}
+
+model NetworkingAssistantSession {
+  id               String   @id @default(cuid())
+  userId           String
+  targetRole       String
+  targetCompanies  String[] @default([])
+  industry         String?
+  summary          String   @db.Text
+  result           Json
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model SalaryPrediction {
+  id              String            @id @default(cuid())
+  userId          String
+  skills          String[]          @default([])
+  experienceYears Float
+  location        String
+  companyType     SalaryCompanyType
+  role            String?
+  minLpa          Float
+  maxLpa          Float
+  medianLpa       Float
+  result          Json
+  createdAt       DateTime          @default(now())
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
 }

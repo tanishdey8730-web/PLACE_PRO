@@ -1,7 +1,14 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { prisma, type UserRole } from "@placepro/database";
-import { DEMO_TOKEN, DEMO_USER, isGuestUser } from "../demo/user.js";
+import {
+  DEMO_TOKEN,
+  DEMO_USER,
+  DEMO_RECRUITER_TOKEN,
+  DEMO_RECRUITER_USER,
+  isGuestUser,
+  isRecruiterDemo,
+} from "../demo/user.js";
 import { AppError } from "./errorHandler.js";
 
 export interface AuthPayload {
@@ -10,7 +17,14 @@ export interface AuthPayload {
   role: UserRole;
 }
 
-export { DEMO_TOKEN, DEMO_USER, isGuestUser } from "../demo/user.js";
+export {
+  DEMO_TOKEN,
+  DEMO_USER,
+  DEMO_RECRUITER_TOKEN,
+  DEMO_RECRUITER_USER,
+  isGuestUser,
+  isRecruiterDemo,
+} from "../demo/user.js";
 
 declare global {
   namespace Express {
@@ -27,6 +41,11 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
   }
 
   const token = header.slice(7);
+
+  if (token === DEMO_RECRUITER_TOKEN) {
+    req.user = DEMO_RECRUITER_USER;
+    return next();
+  }
 
   if (token === DEMO_TOKEN) {
     req.user = DEMO_USER;

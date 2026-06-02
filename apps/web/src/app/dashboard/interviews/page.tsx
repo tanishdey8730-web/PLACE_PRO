@@ -4,12 +4,18 @@ import { useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Mic, Video, MessageSquare } from "lucide-react";
 import { api } from "@/lib/api";
 
-const types = [
+const types: {
+  id: string;
+  title: string;
+  desc: string;
+  href?: string;
+}[] = [
   { id: "TECHNICAL", title: "Technical Interview", desc: "DSA, system design & coding questions" },
-  { id: "HR", title: "HR Interview", desc: "Culture fit, salary & career goals" },
+  { id: "HR", title: "HR Interview", desc: "5 standard questions + full report", href: "/dashboard/hr-interview" },
   { id: "BEHAVIORAL", title: "Behavioral Interview", desc: "STAR method & situational questions" },
 ];
 
@@ -44,9 +50,17 @@ export default function InterviewsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">{t.desc}</p>
-                  <Button variant="gradient" className="w-full" onClick={() => startInterview(t.id)}>
-                    <Video className="h-4 w-4 mr-2" /> Start Session
-                  </Button>
+                  {t.href ? (
+                    <Link href={t.href} className="block">
+                      <Button variant="gradient" className="w-full">
+                        <Video className="h-4 w-4 mr-2" /> Start Session
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button variant="gradient" className="w-full" onClick={() => startInterview(t.id)}>
+                      <Video className="h-4 w-4 mr-2" /> Start Session
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}

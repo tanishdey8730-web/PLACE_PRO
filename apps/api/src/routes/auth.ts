@@ -7,7 +7,7 @@ import { generateOtp } from "../utils/otp.js";
 import { authRateLimit } from "../middleware/rateLimit.js";
 import { AppError } from "../middleware/errorHandler.js";
 
-import { DEMO_TOKEN, DEMO_USER } from "../demo/user.js";
+import { DEMO_TOKEN, DEMO_USER, DEMO_RECRUITER_TOKEN, DEMO_RECRUITER_USER } from "../demo/user.js";
 
 const router = Router();
 
@@ -21,6 +21,21 @@ router.post("/guest", (_req, res) => {
         email: DEMO_USER.email,
         name: "Guest User",
         role: DEMO_USER.role,
+      },
+    },
+  });
+});
+
+router.post("/guest-recruiter", (_req, res) => {
+  res.json({
+    success: true,
+    data: {
+      token: DEMO_RECRUITER_TOKEN,
+      user: {
+        id: DEMO_RECRUITER_USER.userId,
+        email: DEMO_RECRUITER_USER.email,
+        name: "Demo Recruiter",
+        role: DEMO_RECRUITER_USER.role,
       },
     },
   });

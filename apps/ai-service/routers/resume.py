@@ -1,8 +1,10 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.llm import get_llm_response
+from routers import resume_builder
 
 router = APIRouter()
+router.include_router(resume_builder.router, tags=["resume-builder"])
 
 
 class ResumeAnalyzeRequest(BaseModel):
