@@ -88,10 +88,7 @@ export default function PlacementTrackerPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <DashboardHeader
-        title="Placement Tracker"
-        description="Kanban board, funnel stats, and progress across your applications"
-      />
+      <DashboardHeader/>
 
       {stats && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
