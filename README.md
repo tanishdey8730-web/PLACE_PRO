@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # PlacePro AI
 
 **AI-powered placement preparation platform** — coding practice, aptitude tests, mock interviews, resume analysis, career coaching, jobs, contests, and more.
