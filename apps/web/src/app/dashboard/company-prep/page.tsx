@@ -5,27 +5,19 @@ import Link from "next/link";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Building2, ChevronRight, Target } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { CompanyPrepTrackerItem } from "@placepro/shared";
 
-const COMPANIES = [
-  "google",
-  "amazon",
-  "microsoft",
-  "meta",
-  "adobe",
-  "atlassian",
-  "tcs",
-  "infosys",
-  "wipro",
-  "accenture",
-];
+type TierFilter = "all" | "Product" | "Service" | "Startup";
 
 export default function CompanyPrepPage() {
   const [tracker, setTracker] = useState<CompanyPrepTrackerItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<TierFilter>("all");
 
   useEffect(() => {
     async function load() {
@@ -33,27 +25,15 @@ export default function CompanyPrepPage() {
       setLoading(false);
       if (res.success && res.data?.length) {
         setTracker(res.data);
-      } else {
-        setTracker(
-          COMPANIES.map((slug) => ({
-            slug,
-            name: slug.charAt(0).toUpperCase() + slug.slice(1),
-            logoColor: "#6366f1",
-            tier: ["tcs", "infosys", "wipro", "accenture"].includes(slug)
-              ? ("Service" as const)
-              : ("Product" as const),
-            difficulty: "High",
-            progressPercent: 0,
-            readinessScore: 0,
-          }))
-        );
       }
     }
     load();
   }, []);
 
-  const product = tracker.filter((c) => c.tier === "Product");
-  const service = tracker.filter((c) => c.tier === "Service");
+  const filtered =
+    filter === "all" ? tracker : tracker.filter((c) => c.tier === filter);
+  const product = filtered.filter((c) => c.tier === "Product");
+  const service = filtered.filter((c) => c.tier === "Service");
   const avgReadiness =
     tracker.length > 0
       ? Math.round((tracker.reduce((s, c) => s + c.readinessScore, 0) / tracker.length) * 10) / 10
@@ -71,32 +51,49 @@ export default function CompanyPrepPage() {
           <Building2 className="h-7 w-7 text-primary" />
           Company-Specific Preparation
         </h1>
-        <p className="text-muted-foreground mt-1 mb-8">
+        <p className="text-muted-foreground mt-1 mb-4">
           Interview rounds, DSA, aptitude, HR, system design, and real experiences — tailored per company
         </p>
 
-        <div className="grid sm:grid-cols-2 gap-4 mb-8">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Target className="h-4 w-4" /> Avg. Readiness Score
-              </p>
-              <p className="text-3xl font-bold gradient-text mt-1">{avgReadiness}%</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Overall Progress</p>
-              <p className="text-3xl font-bold mt-1">{avgProgress}%</p>
-              <Progress value={avgProgress} className="mt-3" />
-            </CardContent>
-          </Card>
+        <div className="flex flex-wrap gap-2 mb-8">
+          {(["all", "Product", "Service", "Startup"] as TierFilter[]).map((t) => (
+            <Button
+              key={t}
+              size="sm"
+              variant={filter === t ? "default" : "outline"}
+              onClick={() => setFilter(t)}
+            >
+              {t === "all" ? "All companies" : t}
+            </Button>
+          ))}
         </div>
 
         {loading ? (
-          <p className="text-center text-muted-foreground py-12">Loading company tracker...</p>
+          <div className="grid sm:grid-cols-2 gap-4 mb-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-36" />
+            ))}
+          </div>
         ) : (
           <>
+            <div className="grid sm:grid-cols-2 gap-4 mb-8">
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Target className="h-4 w-4" /> Avg. Readiness Score
+                  </p>
+                  <p className="text-3xl font-bold gradient-text mt-1">{avgReadiness}%</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-sm text-muted-foreground">Overall Progress</p>
+                  <p className="text-3xl font-bold mt-1">{avgProgress}%</p>
+                  <Progress value={avgProgress} className="mt-3" />
+                </CardContent>
+              </Card>
+            </div>
+
             <CompanySection title="Product Companies" companies={product} />
             <CompanySection title="Service Companies" companies={service} />
           </>

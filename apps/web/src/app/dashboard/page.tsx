@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { FeatureHub } from "@/components/dashboard/feature-hub";
 
 interface DashboardData {
   placementReadiness: number;
@@ -71,11 +72,11 @@ export default function DashboardPage() {
   }
 
   const scores = [
-    { label: "Placement Ready", value: data.placementReadiness, icon: Target, color: "from-blue-500 to-cyan-500" },
-    { label: "Coding", value: data.codingScore, icon: Code2, color: "from-purple-500 to-pink-500" },
-    { label: "Aptitude", value: data.aptitudeScore, icon: Brain, color: "from-violet-500 to-purple-500" },
-    { label: "Interview", value: data.interviewScore, icon: Mic, color: "from-amber-500 to-orange-500" },
-    { label: "Resume ATS", value: data.resumeAtsScore, icon: FileText, color: "from-emerald-500 to-teal-500" },
+    { label: "Placement Ready", value: data.placementReadiness, icon: Target, color: "from-blue-500 to-cyan-500", href: "/dashboard/analytics" },
+    { label: "Coding", value: data.codingScore, icon: Code2, color: "from-purple-500 to-pink-500", href: "/dashboard/coding" },
+    { label: "Aptitude", value: data.aptitudeScore, icon: Brain, color: "from-violet-500 to-purple-500", href: "/dashboard/aptitude" },
+    { label: "Interview", value: data.interviewScore, icon: Mic, color: "from-amber-500 to-orange-500", href: "/dashboard/interviews" },
+    { label: "Resume ATS", value: data.resumeAtsScore, icon: FileText, color: "from-emerald-500 to-teal-500", href: "/dashboard/resume" },
   ];
 
   return (
@@ -93,16 +94,18 @@ export default function DashboardPage() {
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
         >
           {scores.map((s) => (
-            <Card key={s.label}>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-3">
-                  <s.icon className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-2xl font-bold">{Math.round(s.value)}%</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">{s.label}</p>
-                <Progress value={s.value} />
-              </CardContent>
-            </Card>
+            <Link key={s.label} href={s.href}>
+              <Card className="h-full hover:border-primary/40 transition-colors cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <s.icon className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-2xl font-bold">{Math.round(s.value)}%</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{s.label}</p>
+                  <Progress value={s.value} />
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </motion.div>
 
@@ -126,6 +129,9 @@ export default function DashboardPage() {
                   <Badge key={g} variant="warning">{g}</Badge>
                 ))}
               </div>
+              <Link href="/dashboard/career/dashboard">
+                <Button variant="outline" size="sm" className="mt-2">Open Career Dashboard</Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -193,6 +199,19 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold">Explore Features</h2>
+              <p className="text-sm text-muted-foreground">Each tool opens on its own page</p>
+            </div>
+            <Link href="/dashboard/features">
+              <Button variant="outline" size="sm">View all</Button>
+            </Link>
+          </div>
+          <FeatureHub showCategories={false} limit={9} title="" description="" />
+        </section>
       </main>
     </>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Code2,
@@ -16,16 +17,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const features = [
-  { icon: Code2, title: "Coding Practice", desc: "5000+ problems with Judge0 execution, editorials & company tags." },
-  { icon: Brain, title: "Aptitude Tests", desc: "Quant, logical & verbal with timed mocks and analytics." },
-  { icon: FileText, title: "AI Resume Analyzer", desc: "ATS score, skill gaps, and optimization suggestions." },
-  { icon: Mic, title: "Mock Interviews", desc: "AI interviewer with voice, webcam & detailed feedback." },
-  { icon: Bot, title: "AI Career Coach", desc: "Personalized learning paths and company recommendations." },
-  { icon: BookOpen, title: "Structured Courses", desc: "DSA, System Design, DBMS, OS, Networks & more." },
-  { icon: Trophy, title: "Weekly Contests", desc: "Coding & aptitude challenges with leaderboards & certificates." },
-  { icon: Briefcase, title: "Job Portal", desc: "Browse jobs & internships, apply and track applications." },
-  { icon: Users, title: "Mentorship", desc: "Book mentors with Zoom & Google Meet integration." },
-  { icon: BarChart3, title: "Progress Analytics", desc: "Radar charts, heat maps, and skill growth tracking." },
+  { icon: Code2, title: "Coding Practice", desc: "5000+ problems with Judge0 execution, editorials & company tags.", href: "/dashboard/coding" },
+  { icon: Brain, title: "Aptitude Tests", desc: "Quant, logical & verbal with timed mocks and analytics.", href: "/dashboard/aptitude" },
+  { icon: FileText, title: "AI Resume Analyzer", desc: "ATS score, skill gaps, and optimization suggestions.", href: "/dashboard/resume" },
+  { icon: Mic, title: "Mock Interviews", desc: "AI interviewer with voice, webcam & detailed feedback.", href: "/dashboard/interviews" },
+  { icon: Bot, title: "AI Career Coach", desc: "Personalized learning paths and company recommendations.", href: "/dashboard/career" },
+  { icon: BookOpen, title: "Structured Courses", desc: "DSA, System Design, DBMS, OS, Networks & more.", href: "/dashboard/learning" },
+  { icon: Trophy, title: "Weekly Contests", desc: "Coding & aptitude challenges with leaderboards & certificates.", href: "/dashboard/contests" },
+  { icon: Briefcase, title: "Job Portal", desc: "Browse jobs & internships, apply and track applications.", href: "/dashboard/jobs" },
+  { icon: Users, title: "Mentorship", desc: "Book mentors with Zoom & Google Meet integration.", href: "/dashboard/mentors" },
+  { icon: BarChart3, title: "Progress Analytics", desc: "Radar charts, heat maps, and skill growth tracking.", href: "/dashboard/analytics" },
 ];
 
 export function Features() {
@@ -54,7 +55,8 @@ export function Features() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
             >
-              <Card className="h-full hover:border-primary/30 transition-colors group">
+              <Link href={f.href} className="block h-full">
+              <Card className="h-full hover:border-primary/30 transition-colors group cursor-pointer">
                 <CardHeader>
                   <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 group-hover:from-blue-600/30 group-hover:to-purple-600/30 transition-colors">
                     <f.icon className="h-6 w-6 text-primary" />
@@ -65,6 +67,7 @@ export function Features() {
                   <p className="text-sm text-muted-foreground">{f.desc}</p>
                 </CardContent>
               </Card>
+              </Link>
             </motion.div>
           ))}
         </div>

@@ -526,6 +526,110 @@ export const COMPANY_PREP_DATA: Record<string, CompanyPrepContent> = {
     ],
     prepChecklist: buildServiceChecklist("Accenture"),
   },
+
+  apple: {
+    slug: "apple",
+    name: "Apple",
+    logoColor: "#555555",
+    tier: "Product",
+    profile: {
+      description: "Apple hires for software engineering with strong CS fundamentals, system thinking, and polished problem-solving in onsite loops.",
+      industry: "Consumer Technology",
+      headquarters: "Cupertino, USA",
+      avgPackageLpa: "25–50+ LPA (India experienced bands vary)",
+      difficulty: "Very High",
+      hiringTimeline: "4–8 weeks",
+      focusAreas: ["DSA", "System design", "Objective-C/Swift or C++", "Behavioral"],
+    },
+    interviewRounds: productRounds("Hiring Manager"),
+    dsaQuestions: faangDsa,
+    aptitudePatterns: [],
+    hrQuestions: ["Why Apple?", "Tell me about a challenging project", "How do you handle ambiguity?"],
+    systemDesignQuestions: [
+      { title: "Design iCloud sync", difficulty: "Hard", description: "Sync photos across devices", keyConcepts: ["CAP", "Conflict resolution"] },
+    ],
+    experiences: [
+      { role: "Software Engineer", year: "2024", rounds: "Phone → Onsite (4)", outcome: "Selected", summary: "Heavy focus on clean code and edge cases." },
+    ],
+    prepChecklist: buildProductChecklist("Apple"),
+  },
+
+  netflix: {
+    slug: "netflix",
+    name: "Netflix",
+    logoColor: "#E50914",
+    tier: "Product",
+    profile: {
+      description: "Netflix values strong engineers with distributed systems knowledge and culture fit (freedom & responsibility).",
+      industry: "Streaming / Technology",
+      headquarters: "Los Gatos, USA",
+      avgPackageLpa: "Top-tier compensation globally",
+      difficulty: "Very High",
+      hiringTimeline: "3–6 weeks",
+      focusAreas: ["Distributed systems", "Java/Kotlin", "Culture fit"],
+    },
+    interviewRounds: productRounds("Culture / Bar Raiser"),
+    dsaQuestions: faangDsa,
+    aptitudePatterns: [],
+    hrQuestions: ["What does freedom and responsibility mean to you?", "Describe a failure and learning"],
+    systemDesignQuestions: [
+      { title: "Design video streaming CDN", difficulty: "Hard", description: "Global content delivery", keyConcepts: ["Caching", "Edge nodes"] },
+    ],
+    experiences: [
+      { role: "Senior SDE", year: "2023", rounds: "Recruiter → Tech → Culture", outcome: "Selected", summary: "Deep system design and past impact stories matter most." },
+    ],
+    prepChecklist: buildProductChecklist("Netflix"),
+  },
+
+  cognizant: {
+    slug: "cognizant",
+    name: "Cognizant",
+    logoColor: "#0033A0",
+    tier: "Service",
+    profile: {
+      description: "Cognizant campus hiring emphasizes aptitude, communication, and basic programming for GenC roles.",
+      industry: "IT Services",
+      headquarters: "Teaneck, USA",
+      avgPackageLpa: "4–7 LPA (India campus)",
+      difficulty: "Moderate",
+      hiringTimeline: "2–4 weeks",
+      focusAreas: ["Aptitude", "Communication", "Basic coding"],
+    },
+    interviewRounds: serviceRounds,
+    dsaQuestions: serviceDsa,
+    aptitudePatterns: serviceAptitude,
+    hrQuestions: serviceHr,
+    systemDesignQuestions: [],
+    experiences: [
+      { role: "GenC", year: "2024", rounds: "Aptitude → Tech → HR", outcome: "Selected", summary: "Speed in aptitude sections is key." },
+    ],
+    prepChecklist: buildServiceChecklist("Cognizant"),
+  },
+
+  capgemini: {
+    slug: "capgemini",
+    name: "Capgemini",
+    logoColor: "#0070AD",
+    tier: "Service",
+    profile: {
+      description: "Capgemini conducts online assessments, technical interviews, and HR rounds for analyst/engineer roles.",
+      industry: "Consulting / IT Services",
+      headquarters: "Paris, France",
+      avgPackageLpa: "3.8–6.5 LPA (India campus)",
+      difficulty: "Moderate",
+      hiringTimeline: "2–5 weeks",
+      focusAreas: ["Aptitude", "Pseudo-code", "HR"],
+    },
+    interviewRounds: serviceRounds,
+    dsaQuestions: serviceDsa,
+    aptitudePatterns: serviceAptitude,
+    hrQuestions: [...serviceHr, "Willingness to relocate?"],
+    systemDesignQuestions: [],
+    experiences: [
+      { role: "Analyst", year: "2024", rounds: "Online test → Tech → HR", outcome: "Selected", summary: "Pseudo-code round — practice without IDE." },
+    ],
+    prepChecklist: buildServiceChecklist("Capgemini"),
+  },
 };
 
 export const COMPANY_SLUGS = Object.keys(COMPANY_PREP_DATA);

@@ -18,6 +18,7 @@ import adminRoutes from "./routes/admin.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import careerRoutes from "./routes/career.js";
 import roadmapRoutes from "./routes/roadmap.js";
+import assessmentRoutes from "./routes/assessment.js";
 import companyPrepRoutes from "./routes/companyPrep.js";
 import resumeBuilderRoutes from "./routes/resumeBuilder.js";
 import linkedinAnalysisRoutes from "./routes/linkedinAnalysis.js";
@@ -36,6 +37,9 @@ import referralRoutes from "./routes/referrals.js";
 import placementTrackerRoutes from "./routes/placementTracker.js";
 import networkingAssistantRoutes from "./routes/networkingAssistant.js";
 import salaryPredictorRoutes from "./routes/salaryPredictor.js";
+import analyticsRoutes from "./routes/analytics.js";
+import interviewExperiencesRoutes from "./routes/interviewExperiences.js";
+import codingBattlesRoutes from "./routes/codingBattles.js";
 
 const app = express();
 
@@ -58,6 +62,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/coding", codingRoutes);
 app.use("/api/aptitude", aptitudeRoutes);
+app.use("/api/assessment", assessmentRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/learning", learningRoutes);
@@ -85,6 +90,9 @@ app.use("/api/referrals", referralRoutes);
 app.use("/api/placement-tracker", placementTrackerRoutes);
 app.use("/api/networking-assistant", networkingAssistantRoutes);
 app.use("/api/salary-predictor", salaryPredictorRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/interview-experiences", interviewExperiencesRoutes);
+app.use("/api/coding-battles", codingBattlesRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use(errorHandler);

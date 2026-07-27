@@ -4,6 +4,8 @@ import { prisma, Prisma } from "@placepro/database";
 import { authenticate, isGuestUser } from "../middleware/auth.js";
 import { callCareerCoach } from "../services/aiClient.js";
 import { demoInsights, getDemoChatReply, demoSessionMessages } from "../demo/careerCoach.js";
+import { demoCareerCoachDashboard } from "../demo/careerCoachDashboard.js";
+import { buildCareerCoachDashboard } from "../services/careerCoachDashboard.js";
 import type { CareerCoachInsights, CareerCoachMessage } from "@placepro/shared";
 
 const router = Router();
@@ -43,6 +45,21 @@ function normalizeInsights(raw: Record<string, unknown>): CareerCoachInsights {
     currentSkillsAssessed: (raw.current_skills_assessed ?? raw.currentSkillsAssessed ?? []) as string[],
   };
 }
+
+router.get("/dashboard", authenticate, async (req, res, next) => {
+  try {
+    const targetRole = String(req.query.targetRole ?? "Software Engineer");
+
+    if (isGuestUser(req)) {
+      return res.json({ success: true, data: demoCareerCoachDashboard });
+    }
+
+    const data = await buildCareerCoachDashboard(req.user!.userId, targetRole);
+    res.json({ success: true, data });
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.get("/sessions", authenticate, async (req, res, next) => {
   try {

@@ -31,6 +31,7 @@ import {
   Kanban,
   UsersRound,
   IndianRupee,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,8 @@ const nav = [
   { href: "/dashboard/salary-predictor", icon: IndianRupee, label: "Salary Predictor" },
   { href: "/dashboard/mentors", icon: Users, label: "Mentors" },
   { href: "/dashboard/community", icon: MessageSquare, label: "Community" },
+  { href: "/dashboard/interview-experiences", icon: MessageSquare, label: "Interview Exp." },
+  { href: "/dashboard/coding-battles", icon: Code2, label: "Coding Battles" },
   { href: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
   { href: "/dashboard/placement-probability", icon: Target, label: "Placement %" },
   { href: "/dashboard/roadmap", icon: Map, label: "Roadmap" },
@@ -98,7 +101,10 @@ export function Sidebar() {
             );
           })}
         </nav>
-        <div className="border-t border-border/50 p-4">
+        <div className="border-t border-border/50 p-4 space-y-1">
+          <Link href="/dashboard/features" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+            <LayoutGrid className="h-4 w-4" /> All Features
+          </Link>
           <Link href="/dashboard/settings" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
             <Settings className="h-4 w-4" /> Settings
           </Link>
@@ -107,8 +113,14 @@ export function Sidebar() {
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 backdrop-blur-xl safe-area-pb">
         <div className="flex justify-around py-2">
-          {nav.slice(0, 5).map((item) => {
-            const active = pathname === item.href || pathname.startsWith(item.href);
+          {[
+            nav[0],
+            nav[1],
+            nav[10],
+            nav[26],
+            { href: "/dashboard/features", icon: LayoutGrid, label: "More" },
+          ].map((item) => {
+            const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
             return (
               <Link key={item.href} href={item.href} className={cn("flex flex-col items-center gap-0.5 p-2 text-xs", active ? "text-primary" : "text-muted-foreground")}>
                 <item.icon className="h-5 w-5" />

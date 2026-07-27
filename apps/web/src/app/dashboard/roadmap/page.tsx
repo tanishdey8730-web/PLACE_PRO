@@ -77,6 +77,24 @@ export default function RoadmapPage() {
   }, []);
 
   useEffect(() => {
+    const raw = sessionStorage.getItem("placepro_roadmap_prefill");
+    if (raw) {
+      try {
+        const p = JSON.parse(raw) as {
+          branch?: string;
+          skillLevel?: string;
+          studyHoursPerDay?: number;
+          targetCompanies?: string[];
+        };
+        if (p.branch) setBranch(p.branch);
+        if (p.skillLevel) setSkillLevel(p.skillLevel as "BEGINNER" | "INTERMEDIATE" | "ADVANCED");
+        if (p.studyHoursPerDay) setStudyHoursPerDay(p.studyHoursPerDay);
+        if (p.targetCompanies?.length) setTargetCompanies(p.targetCompanies.join(", "));
+        sessionStorage.removeItem("placepro_roadmap_prefill");
+      } catch {
+        /* ignore */
+      }
+    }
     loadRoadmap();
   }, [loadRoadmap]);
 

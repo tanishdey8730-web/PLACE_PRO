@@ -7,3 +7,6 @@ export * from "./referral.js";
 export * from "./placementTracker.js";
 export * from "./networkingAssistant.js";
 export * from "./salaryPredictor.js";
+export * from "./interviewExperience.js";
+export * from "./codingBattle.js";
+export * from "./careerCoachDashboard.js";

@@ -56,7 +56,9 @@ const DIMENSION_LABELS: Record<SystemDesignDimension, string> = {
   security: "Security",
 };
 
-const TOPIC_BOOST: Partial<Record<SystemDesignTopicId, Partial<Record<SystemDesignDimension, RegExp>>> = {
+type DimensionRegexMap = Partial<Record<SystemDesignDimension, RegExp>>;
+
+const TOPIC_BOOST: Partial<Record<SystemDesignTopicId, DimensionRegexMap>> = {
   instagram: {
     scalability: /\b(feed|timeline|fan-?out|cdn|media)\b/i,
     caching: /\b(feed|timeline|redis)\b/i,

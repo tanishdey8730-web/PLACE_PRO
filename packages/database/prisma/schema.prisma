@@ -171,6 +171,32 @@ enum SalaryCompanyType {
   CONSULTING
 }
 
+enum InterviewExperienceDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum CodingBattleStatus {
+  WAITING
+  MATCHMAKING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum CodingBattleMode {
+  ONE_VS_ONE
+  MULTIPLAYER
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -235,6 +261,12 @@ model User {
   placementApplications PlacementApplication[]
   networkingSessions    NetworkingAssistantSession[]
   salaryPredictions     SalaryPrediction[]
+  interviewExperiences  InterviewExperience[]
+  interviewExperienceVotes InterviewExperienceVote[]
+  interviewExperienceSaves InterviewExperienceSave[]
+  interviewExperienceComments InterviewExperienceComment[]
+  codingBattlesCreated  CodingBattle[]        @relation("BattleCreator")
+  codingBattleParticipants CodingBattleParticipant[]
 }
 
 model Account {
@@ -322,6 +354,7 @@ model CodingProblem {
   testCases   TestCase[]
   submissions Submission[]
   discussions Discussion[]
+  codingBattles CodingBattle[]
 }
 
 model TestCase {
@@ -1098,4 +1131,103 @@ model SalaryPrediction {
 
   @@index([userId])
   @@index([userId, createdAt])
+}
+
+model InterviewExperience {
+  id             String                      @id @default(cuid())
+  userId         String
+  companyName    String
+  role           String
+  interviewDate  DateTime?
+  questionsAsked String                      @db.Text
+  difficulty     InterviewExperienceDifficulty @default(MEDIUM)
+  tips           String?                     @db.Text
+  tags           String[]                    @default([])
+  upvoteCount    Int                         @default(0)
+  downvoteCount  Int                         @default(0)
+  shareCount     Int                         @default(0)
+  status         ModerationStatus            @default(APPROVED)
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+  user           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments       InterviewExperienceComment[]
+  votes          InterviewExperienceVote[]
+  saves          InterviewExperienceSave[]
+
+  @@index([companyName])
+  @@index([status, createdAt])
+  @@index([userId])
+}
+
+model InterviewExperienceVote {
+  id           String              @id @default(cuid())
+  experienceId String
+  userId       String
+  vote         Int
+  createdAt    DateTime            @default(now())
+  experience   InterviewExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([experienceId, userId])
+}
+
+model InterviewExperienceSave {
+  id           String              @id @default(cuid())
+  experienceId String
+  userId       String
+  createdAt    DateTime            @default(now())
+  experience   InterviewExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([experienceId, userId])
+}
+
+model InterviewExperienceComment {
+  id           String              @id @default(cuid())
+  experienceId String
+  userId       String
+  content      String              @db.Text
+  createdAt    DateTime            @default(now())
+  experience   InterviewExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([experienceId])
+}
+
+model CodingBattle {
+  id              String               @id @default(cuid())
+  roomCode        String               @unique
+  creatorId       String
+  mode            CodingBattleMode     @default(ONE_VS_ONE)
+  status          CodingBattleStatus   @default(WAITING)
+  problemId       String?
+  durationSeconds Int                  @default(1800)
+  maxPlayers      Int                  @default(2)
+  startedAt       DateTime?
+  endedAt         DateTime?
+  winnerId        String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  creator         User                 @relation("BattleCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  problem         CodingProblem?       @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  participants    CodingBattleParticipant[]
+
+  @@index([status])
+  @@index([roomCode])
+}
+
+model CodingBattleParticipant {
+  id        String       @id @default(cuid())
+  battleId  String
+  userId    String
+  score     Int          @default(0)
+  rank      Int?
+  code      String?      @db.Text
+  language  Language?
+  joinedAt  DateTime     @default(now())
+  battle    CodingBattle @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([battleId, userId])
+  @@index([battleId])
 }
