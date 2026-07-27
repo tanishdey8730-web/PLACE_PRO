@@ -14,7 +14,11 @@ import {
   Sparkles,
   Clock,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import {
+  loadStoredRoadmap,
+  generateRoadmap as generateLocalRoadmap,
+  completeTask as completeLocalTask,
+} from "@/lib/roadmapEngine";
 import { cn } from "@/lib/utils";
 import type {
   PlacementRoadmapPlan,
@@ -56,8 +60,6 @@ const CATEGORY_COLORS: Record<RoadmapCategory, string> = {
   RESUME_BUILDING: "bg-cyan-500/15 text-cyan-400",
 };
 
-const GUEST_USER_ID = "demo-guest";
-
 export default function RoadmapPage() {
   const [roadmap, setRoadmap] = useState<PlacementRoadmapRecord | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,11 +71,11 @@ export default function RoadmapPage() {
   const [studyHoursPerDay, setStudyHoursPerDay] = useState(3);
   const [activeTab, setActiveTab] = useState<"overview" | "daily" | "weekly" | "monthly">("overview");
 
-  const loadRoadmap = useCallback(async () => {
+  const loadRoadmap = useCallback(() => {
     setFetching(true);
-    const res = await api<PlacementRoadmapRecord | null>(`/api/roadmap/${GUEST_USER_ID}`);
+    const stored = loadStoredRoadmap();
+    setRoadmap(stored);
     setFetching(false);
-    if (res.success && res.data) setRoadmap(res.data);
   }, []);
 
   useEffect(() => {
@@ -110,48 +112,28 @@ export default function RoadmapPage() {
     return plan.daily_tasks.filter((t) => !completedKeys.has(t.id)).slice(0, 5);
   }, [plan, completedKeys]);
 
-  async function generateRoadmap() {
+  function generateRoadmap() {
     setLoading(true);
     const companies = targetCompanies
       .split(",")
       .map((c) => c.trim())
       .filter(Boolean);
 
-    const res = await api<PlacementRoadmapRecord>("/api/roadmap/generate", {
-      method: "POST",
-      body: JSON.stringify({
-        branch,
-        graduationYear,
-        skillLevel,
-        targetCompanies: companies,
-        studyHoursPerDay,
-      }),
+    const record = generateLocalRoadmap({
+      branch,
+      graduationYear,
+      skillLevel,
+      targetCompanies: companies,
+      studyHoursPerDay,
     });
+    setRoadmap(record);
     setLoading(false);
-    if (res.success && res.data) setRoadmap(res.data);
   }
 
-  async function toggleTask(taskKey: string, category?: RoadmapCategory) {
+  function toggleTask(taskKey: string, category?: RoadmapCategory) {
     if (!roadmap) return;
-    const res = await api<PlacementRoadmapRecord>(
-      `/api/roadmap/${roadmap.id}/tasks/${taskKey}/complete`,
-      { method: "POST", body: JSON.stringify({ category }) }
-    );
-    if (res.success && res.data) setRoadmap(res.data);
-    else if (roadmap) {
-      const keys = new Set(roadmap.completedTasks.map((t) => t.taskKey));
-      if (!keys.has(taskKey)) keys.add(taskKey);
-      const total = plan?.daily_tasks.length ?? 1;
-      const done = plan?.daily_tasks.filter((t) => keys.has(t.id)).length ?? 0;
-      setRoadmap({
-        ...roadmap,
-        progressPercent: Math.round((done / total) * 1000) / 10,
-        completedTasks: [
-          ...roadmap.completedTasks,
-          { taskKey, category: category ?? null, completedAt: new Date().toISOString() },
-        ],
-      });
-    }
+    const updated = completeLocalTask(roadmap, taskKey, category);
+    setRoadmap(updated);
   }
 
   return (

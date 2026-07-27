@@ -58,11 +58,18 @@ export interface TestResult {
 interface TestRunnerProps {
   test: GeneratedTest;
   submitPath?: string;
+  onSubmitLocal?: (answers: Record<string, string>, timeTakenSeconds: number) => TestResult | Promise<TestResult>;
   onComplete: (result: TestResult) => void;
   onCancel?: () => void;
 }
 
-export function TestRunner({ test, submitPath = "/api/assessment/submit", onComplete, onCancel }: TestRunnerProps) {
+export function TestRunner({
+  test,
+  submitPath = "/api/assessment/submit",
+  onSubmitLocal,
+  onComplete,
+  onCancel,
+}: TestRunnerProps) {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(test.durationMinutes * 60);
@@ -72,6 +79,14 @@ export function TestRunner({ test, submitPath = "/api/assessment/submit", onComp
   const submit = useCallback(async () => {
     setSubmitting(true);
     const timeTakenSeconds = Math.round((Date.now() - startedAt) / 1000);
+
+    if (onSubmitLocal) {
+      const result = await onSubmitLocal(answers, timeTakenSeconds);
+      setSubmitting(false);
+      onComplete(result);
+      return;
+    }
+
     const res = await api<TestResult>(submitPath, {
       method: "POST",
       body: JSON.stringify({ testId: test.id, answers, timeTakenSeconds }),
@@ -85,10 +100,10 @@ export function TestRunner({ test, submitPath = "/api/assessment/submit", onComp
         score: 0,
         correct: 0,
         total: test.questions.length,
-        recommendations: ["Could not reach server. Retry when API is running."],
+        recommendations: ["Could not reach server. Tests now run locally — refresh and try again."],
       });
     }
-  }, [answers, onComplete, startedAt, submitPath, test.id, test.questions.length]);
+  }, [answers, onComplete, onSubmitLocal, startedAt, submitPath, test.id, test.questions.length]);
 
   useEffect(() => {
     if (secondsLeft <= 0) {

@@ -5,9 +5,9 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { api } from "@/lib/api";
 import { TestRunner, type GeneratedTest, type TestResult } from "@/components/assessment/test-runner";
 import { TestResults } from "@/components/assessment/test-results";
+import { generatePlacementTest, scoreTest } from "@/lib/aptitudeEngine";
 import { ClipboardList, Loader2 } from "lucide-react";
 
 type Phase = "profile" | "test" | "result";
@@ -38,22 +38,17 @@ export default function AssessmentPage() {
   const [result, setResult] = useState<TestResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function startTest(finalProfile: Record<string, string>) {
+  function startTest(finalProfile: Record<string, string>) {
     setLoading(true);
-    const res = await api<GeneratedTest>("/api/assessment/start-placement", {
-      method: "POST",
-      body: JSON.stringify({
-        targetRole: finalProfile.targetRole ?? "Software Engineer",
-        codingLevel: finalProfile.codingLevel ?? "Beginner",
-        monthsToPlacement: finalProfile.monthsToPlacement ?? "6-12",
-        branch: "Computer Science",
-      }),
+    const generated = generatePlacementTest({
+      targetRole: finalProfile.targetRole ?? "Software Engineer",
+      codingLevel: finalProfile.codingLevel ?? "Beginner",
+      monthsToPlacement: finalProfile.monthsToPlacement ?? "6-12",
+      branch: "Computer Science",
     });
+    setTest(generated);
+    setPhase("test");
     setLoading(false);
-    if (res.success && res.data) {
-      setTest(res.data);
-      setPhase("test");
-    }
   }
 
   function handleProfileAnswer(option: string) {
@@ -119,6 +114,7 @@ export default function AssessmentPage() {
         {phase === "test" && test && (
           <TestRunner
             test={test}
+            onSubmitLocal={(answers, timeTaken) => scoreTest(test.id, answers, timeTaken)}
             onComplete={(r) => {
               setResult(r);
               setPhase("result");

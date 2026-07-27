@@ -5,16 +5,22 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { api } from "@/lib/api";
 import { TestRunner, type GeneratedTest, type TestResult } from "@/components/assessment/test-runner";
 import { TestResults } from "@/components/assessment/test-results";
+import {
+  generateAptitudeQuiz,
+  generateAptitudeMock,
+  generateFullMock,
+  scoreTest,
+} from "@/lib/aptitudeEngine";
+import type { AptitudeCategory } from "@/data/aptitudeQuestionBank";
 import { Loader2 } from "lucide-react";
 
 const categories = [
-  { id: "QUANTITATIVE", title: "Quantitative Aptitude", topics: ["Percentage", "Profit & Loss", "Time & Work", "Probability", "P&C"] },
-  { id: "LOGICAL", title: "Logical Reasoning", topics: ["Puzzles", "Blood Relations", "Seating Arrangement", "Coding-Decoding"] },
-  { id: "VERBAL", title: "Verbal Ability", topics: ["Reading Comprehension", "Grammar", "Vocabulary"] },
-] as const;
+  { id: "QUANTITATIVE" as AptitudeCategory, title: "Quantitative Aptitude", topics: ["Percentage", "Profit & Loss", "Time & Work", "Probability", "P&C"] },
+  { id: "LOGICAL" as AptitudeCategory, title: "Logical Reasoning", topics: ["Puzzles", "Blood Relations", "Seating Arrangement", "Coding-Decoding"] },
+  { id: "VERBAL" as AptitudeCategory, title: "Verbal Ability", topics: ["Reading Comprehension", "Grammar", "Vocabulary"] },
+];
 
 type View = "menu" | "test" | "result";
 
@@ -24,22 +30,28 @@ export default function AptitudePage() {
   const [test, setTest] = useState<GeneratedTest | null>(null);
   const [result, setResult] = useState<TestResult | null>(null);
   const [lastScore, setLastScore] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function generateTest(type: "quiz" | "mock" | "full_mock", category?: string) {
-    const key = category ?? type;
+  function generateTest(type: "quiz" | "mock" | "full_mock", category?: AptitudeCategory) {
+    const key = category ? `${type}-${category}` : type;
     setLoading(key);
-    const res = await api<GeneratedTest>("/api/aptitude/generate", {
-      method: "POST",
-      body: JSON.stringify({
-        type,
-        category,
-        questionCount: type === "quiz" ? 10 : undefined,
-      }),
-    });
-    setLoading(null);
-    if (res.success && res.data) {
-      setTest(res.data);
+    setError(null);
+    try {
+      let generated: GeneratedTest;
+      if (type === "full_mock") {
+        generated = generateFullMock();
+      } else if (type === "mock") {
+        generated = generateAptitudeMock(category);
+      } else {
+        if (!category) throw new Error("Category required");
+        generated = generateAptitudeQuiz(category, 10);
+      }
+      setTest(generated);
       setView("test");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to generate test");
+    } finally {
+      setLoading(null);
     }
   }
 
@@ -59,6 +71,12 @@ export default function AptitudePage() {
             <p className="text-muted-foreground mt-1 mb-6">
               Topic-wise quizzes, timed mocks & full placement-style papers with instant scoring
             </p>
+
+            {error && (
+              <Card className="mb-6 border-red-500/30">
+                <CardContent className="pt-4 text-sm text-red-500">{error}</CardContent>
+              </Card>
+            )}
 
             {lastScore !== null && (
               <Card className="mb-6 border-emerald-500/30">
@@ -102,10 +120,10 @@ export default function AptitudePage() {
                     <Button
                       variant="gradient"
                       className="w-full"
-                      disabled={loading === cat.id}
+                      disabled={loading === `quiz-${cat.id}`}
                       onClick={() => generateTest("quiz", cat.id)}
                     >
-                      {loading === cat.id ? (
+                      {loading === `quiz-${cat.id}` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         "Start Timed Quiz (10 Q)"
@@ -114,13 +132,14 @@ export default function AptitudePage() {
                     <Button
                       variant="outline"
                       className="w-full"
-                      disabled={loading === `${cat.id}-mock`}
-                      onClick={() => {
-                        setLoading(`${cat.id}-mock`);
-                        generateTest("mock", cat.id).finally(() => setLoading(null));
-                      }}
+                      disabled={loading === `mock-${cat.id}`}
+                      onClick={() => generateTest("mock", cat.id)}
                     >
-                      Mock Exam (15 Q)
+                      {loading === `mock-${cat.id}` ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Mock Exam (15 Q)"
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -132,7 +151,7 @@ export default function AptitudePage() {
         {view === "test" && test && (
           <TestRunner
             test={test}
-            submitPath="/api/aptitude/submit"
+            onSubmitLocal={(answers, timeTaken) => scoreTest(test.id, answers, timeTaken)}
             onComplete={(r) => {
               setResult(r);
               setLastScore(r.score);
