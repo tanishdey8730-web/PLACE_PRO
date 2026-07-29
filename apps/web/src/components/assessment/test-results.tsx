@@ -5,16 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, Map, RotateCcw } from "lucide-react";
+import { CheckCircle, XCircle, Map, RotateCcw, Shuffle } from "lucide-react";
 import type { TestResult } from "./test-runner";
 
 interface TestResultsProps {
   result: TestResult;
   onRetry?: () => void;
+  onNewMock?: () => void;
+  newMockLabel?: string;
   showRoadmap?: boolean;
 }
 
-export function TestResults({ result, onRetry, showRoadmap = true }: TestResultsProps) {
+export function TestResults({
+  result,
+  onRetry,
+  onNewMock,
+  newMockLabel = "Try New Mock",
+  showRoadmap = true,
+}: TestResultsProps) {
   const readiness = result.placementReadiness ?? result.score;
 
   function saveRoadmapPrefill() {
@@ -118,6 +126,11 @@ export function TestResults({ result, onRetry, showRoadmap = true }: TestResults
         {onRetry && (
           <Button variant="outline" onClick={onRetry}>
             <RotateCcw className="h-4 w-4 mr-2" /> Retake
+          </Button>
+        )}
+        {onNewMock && (
+          <Button variant="outline" onClick={onNewMock}>
+            <Shuffle className="h-4 w-4 mr-2" /> {newMockLabel}
           </Button>
         )}
         {showRoadmap && result.roadmapSuggestion && (

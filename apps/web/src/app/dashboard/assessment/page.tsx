@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { TestRunner, type GeneratedTest, type TestResult } from "@/components/assessment/test-runner";
 import { TestResults } from "@/components/assessment/test-results";
-import { generatePlacementTest, scoreTest } from "@/lib/aptitudeEngine";
+import { generatePlacementTest, regenerateTest, scoreTest } from "@/lib/aptitudeEngine";
 import { ClipboardList, Loader2 } from "lucide-react";
 
 type Phase = "profile" | "test" | "result";
@@ -70,6 +70,15 @@ export default function AssessmentPage() {
     setResult(null);
   }
 
+  function retakeWithNewPaper() {
+    if (!test) return reset();
+    const fresh = regenerateTest(test.id);
+    if (!fresh) return reset();
+    setTest(fresh);
+    setResult(null);
+    setPhase("test");
+  }
+
   return (
     <>
       <DashboardHeader />
@@ -126,7 +135,12 @@ export default function AssessmentPage() {
         {phase === "result" && result && (
           <>
             <h1 className="text-2xl font-bold mb-6 text-center">Assessment Complete</h1>
-            <TestResults result={result} onRetry={reset} />
+            <TestResults
+              result={result}
+              onRetry={reset}
+              onNewMock={retakeWithNewPaper}
+              newMockLabel="Try New Paper"
+            />
           </>
         )}
       </main>
